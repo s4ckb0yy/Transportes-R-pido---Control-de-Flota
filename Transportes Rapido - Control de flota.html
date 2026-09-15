@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruta Control · Transportes Rápido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F4F8;
+    --surface:#FFFFFF;
+    --ink:#12161C;
+    --ink-soft:#69707B;
+    --line:#E4E8EF;
+    --accent:#E8590C;
+    --accent-dark:#C24A09;
+    --blue:#2F6FED;
+    --blue-dark:#2557C7;
+    --purple:#7C4DFF;
+    --cyan:#0EA5B7;
+    --sidebar:#122A4D;
+    --sidebar-soft:#1E3D68;
+    --ok:#1E9E5A;
+    --ok-bg:#E4F7EC;
+    --warn:#B5790A;
+    --warn-bg:#FCF1DA;
+    --danger:#D33636;
+    --danger-bg:#FCEAEA;
+    --shadow:0 1px 2px rgba(16,24,40,.05), 0 8px 20px rgba(16,24,40,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+    margin:0;
+    color:var(--ink);
+  }
+  button{font-family:inherit;}
+
+  .shell{display:flex; min-height:100vh; align-items:stretch;}
+
+  .sidebar{
+    flex:none; width:78px; background:var(--sidebar);
+    display:flex; flex-direction:column; align-items:center;
+    padding:1.2rem 0 1rem; gap:0.35rem;
+  }
+  .side-mark{
+    width:38px;height:38px;border-radius:10px;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;color:#fff;
+    font-family:'Barlow Condensed';font-weight:700;font-size:1.15rem;
+    margin-bottom:0.9rem;flex:none;
+  }
+  .side-nav{display:flex;flex-direction:column;gap:0.3rem;width:100%;align-items:center;}
+  .side-nav button{
+    width:52px;height:52px;border:none;border-radius:11px;background:transparent;
+    color:#9FB0C6;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s, color 0.15s;
+  }
+  .side-nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;}
+  .side-nav button:hover{background:var(--sidebar-soft);color:#fff;}
+  .side-nav button.active{background:var(--accent);color:#fff;}
+
+  @media(max-width:720px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;padding:0.6rem 0.6rem;overflow-x:auto;justify-content:flex-start;gap:0.5rem;}
+    .side-mark{margin:0 0.4rem 0 0;}
+    .side-nav{flex-direction:row;width:auto;}
+  }
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  .topbar{
+    background:var(--surface); border-bottom:1px solid var(--line);
+    padding:0.85rem 1.6rem; display:flex; align-items:center; gap:1rem;
+  }
+  .topbar-inner{display:flex;align-items:center;gap:1rem;width:100%;}
+  .brand{display:flex;align-items:baseline;gap:0.6rem;flex:none;}
+  .brand h1{font-size:1.25rem;line-height:1;}
+  .brand span{color:var(--ink-soft);font-size:0.78rem;display:block;margin-top:2px;font-family:'Inter';font-weight:400;}
+  .topbar-search{
+    flex:1; max-width:340px; display:flex; align-items:center; gap:0.5rem;
+    background:var(--bg); border:1px solid var(--line); border-radius:9px;
+    padding:0.5rem 0.75rem; color:var(--ink-soft);
+  }
+  .topbar-search svg{width:16px;height:16px;stroke:currentColor;fill:none;flex:none;}
+  .topbar-search input{
+    border:none;background:transparent;padding:0;font-size:0.86rem;color:var(--ink);width:100%;
+  }
+  .topbar-search input:focus{outline:none;}
+  .topbar-right{display:flex;align-items:center;gap:0.7rem;margin-left:auto;flex:none;}
+  .topbar-avatar{
+    width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;
+    font-family:'Inter';flex:none;
+  }
+  @media(max-width:600px){
+    .topbar{padding:0.7rem 1rem;}
+    .topbar-search{display:none;}
+    .brand span{display:none;}
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:1.6rem 1.8rem 4rem;width:100%;}
+  @media(max-width:600px){.wrap{padding:1.2rem 1rem 3rem;}}
+
+  .role-head{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    padding-bottom:0.9rem;margin-bottom:1.4rem;
+    flex-wrap:wrap;gap:0.6rem;
+  }
+  .role-head h2{font-size:1.7rem;}
+  .role-head p{color:var(--ink-soft);margin:0.2rem 0 0;font-size:0.9rem;max-width:60ch;font-family:'Inter';}
+  .as-select{
+    font-family:'Inter';font-size:0.85rem;color:var(--ink-soft);
+    display:flex;align-items:center;gap:0.5rem;
+  }
+  .as-select select{
+    font-family:inherit;font-size:0.85rem;padding:0.4rem 0.6rem;border:1px solid var(--line);
+    border-radius:8px;background:var(--surface);color:var(--ink);
+  }
+
+  .grid{display:grid;gap:1.1rem;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:820px){
+    .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1.2rem 1.3rem;box-shadow:var(--shadow);
+  }
+  .card h3{font-size:1.1rem;margin-bottom:0.6rem;}
+  .card h4{font-size:1rem;margin-bottom:0.4rem;color:var(--ink);}
+  .muted{color:var(--ink-soft);}
+  .small{font-size:0.82rem;}
+
+  label{display:block;font-size:0.82rem;color:var(--ink-soft);margin-bottom:0.25rem;margin-top:0.7rem;font-family:'Inter';}
+  label:first-of-type{margin-top:0;}
+  .req{color:var(--danger);font-weight:700;}
+  input,select,textarea{
+    width:100%;padding:0.6rem 0.65rem;border:1px solid var(--line);border-radius:9px;
+    font-family:inherit;font-size:0.92rem;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  textarea{resize:vertical;min-height:64px;}
+  .input-readonly{background:var(--bg);color:var(--ink-soft);cursor:not-allowed;}
+  .input-error{border-color:var(--danger) !important;box-shadow:0 0 0 1px var(--danger);}
+  .costo-estimado{
+    background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:0.6rem 0.9rem;
+    font-family:'Barlow Condensed';font-size:1.5rem;font-weight:700;color:var(--blue);
+  }
+  .form-error-box{
+    display:flex;gap:0.6rem;padding:0.65rem 0.75rem;border-radius:10px;border:1px solid var(--danger);
+    background:var(--danger-bg);color:var(--danger);font-size:0.85rem;margin-top:0.9rem;
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;
+    background:var(--accent);color:#fff;border:none;border-radius:9px;
+    padding:0.65rem 1.1rem;font-size:0.9rem;font-weight:600;cursor:pointer;
+    transition:background 0.15s;
+  }
+  .btn:hover{background:var(--accent-dark);}
+  .btn.secondary{background:var(--blue);}
+  .btn.secondary:hover{background:var(--blue-dark);}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--ink);}
+  .btn.big{padding:0.95rem 1.3rem;font-size:1.02rem;width:100%;}
+  .btn:disabled{background:#C9CFD3;cursor:not-allowed;}
+
+  table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+  th{
+    text-align:left;color:var(--ink-soft);font-weight:600;font-size:0.76rem;
+    text-transform:none;padding:0.55rem 0.6rem;border-bottom:1px solid var(--line);
+  }
+  td{padding:0.65rem 0.6rem;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+
+  .badge{
+    display:inline-block;padding:0.22rem 0.6rem;border-radius:20px;font-size:0.78rem;font-weight:600;
+    white-space:nowrap;
+  }
+  .b-solicitado{background:#E9EEFB;color:var(--blue);}
+  .b-asignado{background:var(--warn-bg);color:var(--warn);}
+  .b-transito{background:#E9F3FB;color:#1D5FA8;}
+  .b-entregado{background:var(--ok-bg);color:var(--ok);}
+  .b-cancelado{background:var(--danger-bg);color:var(--danger);}
+  .b-disponible{background:var(--ok-bg);color:var(--ok);}
+  .b-mantenimiento{background:var(--warn-bg);color:var(--warn);}
+  .b-taller{background:var(--danger-bg);color:var(--danger);}
+  .b-viaje{background:#E9F3FB;color:#1D5FA8;}
+  .b-descanso{background:#EEF0F3;color:var(--ink-soft);}
+
+  .timeline{display:flex;margin:1rem 0 0.4rem;}
+  .tl-step{flex:1;text-align:center;position:relative;}
+  .tl-dot{
+    width:16px;height:16px;border-radius:50%;background:var(--line);margin:0 auto 0.4rem;
+    border:3px solid var(--surface);outline:2px solid var(--line);
+  }
+  .tl-step.done .tl-dot{background:var(--accent);outline-color:var(--accent);}
+  .tl-step.current .tl-dot{background:var(--ok);outline-color:var(--ok);}
+  .tl-step::before{
+    content:"";position:absolute;top:7px;left:-50%;width:100%;height:2px;background:var(--line);z-index:-1;
+  }
+  .tl-step:first-child::before{display:none;}
+  .tl-step.done::before{background:var(--accent);}
+  .tl-label{font-size:0.72rem;color:var(--ink-soft);}
+  .tl-step.done .tl-label,.tl-step.current .tl-label{color:var(--ink);font-weight:600;}
+
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:0.8rem;}
+  .board-col{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-height:140px;box-shadow:var(--shadow);overflow:hidden;}
+  .board-col-head{
+    padding:0.6rem 0.75rem;font-family:'Barlow Condensed';font-weight:600;font-size:0.95rem;
+    background:#F7F9FC;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+  }
+  .board-col-head .count{color:var(--ink-soft);font-family:'Inter';font-size:0.78rem;}
+  .board-body{padding:0.55rem;display:flex;flex-direction:column;gap:0.5rem;}
+  .trip-tile{
+    background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:9px;padding:0.55rem 0.65rem;font-size:0.82rem;
+  }
+  .trip-tile .tt-id{font-weight:600;}
+  .trip-tile .tt-actions{margin-top:0.4rem;display:flex;gap:0.35rem;flex-wrap:wrap;}
+  .trip-tile .tt-actions button{
+    font-size:0.72rem;padding:0.32rem 0.55rem;border-radius:7px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;
+  }
+  .trip-tile .tt-actions button:hover{border-color:var(--ink);}
+  @media(max-width:960px){.board{grid-template-columns:1fr;}}
+
+  .kpi{display:flex;flex-direction:column;gap:0.2rem;}
+  .kpi .num{font-family:'Barlow Condensed';font-size:2.2rem;font-weight:700;line-height:1;color:var(--blue);}
+  .kpi .lbl{font-size:0.8rem;color:var(--ink-soft);}
+  .kpi.up .num{color:var(--ok);}
+  .kpi.down .num{color:var(--danger);}
+
+  .bars{display:flex;flex-direction:column;gap:0.6rem;margin-top:0.4rem;}
+  .bar-row{display:grid;grid-template-columns:110px 1fr 46px;align-items:center;gap:0.6rem;font-size:0.82rem;}
+  .bar-track{background:var(--bg);border-radius:20px;height:12px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--blue);border-radius:20px;}
+  .bar-fill.accent{background:var(--accent);}
+
+  .donut{
+    width:150px;height:150px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin:0 auto;
+    background:conic-gradient(var(--accent) calc(var(--pct) * 1%), #E9ECF1 0);
+  }
+  .donut-inner{
+    width:104px;height:104px;background:var(--surface);border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .donut-inner .num{font-family:'Barlow Condensed';font-size:1.7rem;font-weight:700;}
+  .donut-inner .lbl{font-size:0.68rem;color:var(--ink-soft);text-align:center;}
+
+  .alert{
+    display:flex;gap:0.6rem;padding:0.65rem 0.75rem;border-radius:10px;border:1px solid var(--danger);
+    background:var(--danger-bg);color:var(--danger);font-size:0.85rem;margin-bottom:0.5rem;
+  }
+  .alert.warnkind{border-color:var(--warn);background:var(--warn-bg);color:var(--warn);}
+  .alert b{color:inherit;}
+
+  .empty{
+    border:1px dashed var(--line);border-radius:var(--radius);padding:1.4rem;text-align:center;
+    color:var(--ink-soft);font-size:0.88rem;
+  }
+
+  .driver-card{
+    background:var(--sidebar);color:#fff;border-radius:16px;padding:1.2rem 1.3rem;box-shadow:var(--shadow);
+  }
+  .driver-card .tt-route{font-family:'Barlow Condensed';font-size:1.5rem;font-weight:600;margin:0.3rem 0 0.1rem;}
+  .driver-card .tt-meta{color:#AEB9CB;font-size:0.85rem;}
+  .driver-card .btn.big{margin-top:0.9rem;}
+  .toast{
+    position:fixed;bottom:1.2rem;right:1.2rem;background:var(--ink);color:#fff;
+    padding:0.7rem 1rem;border-radius:10px;font-size:0.85rem;box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    opacity:0;transform:translateY(10px);transition:opacity 0.2s, transform 0.2s;pointer-events:none;
+    max-width:320px;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .section-title{margin:1.6rem 0 0.7rem;font-size:1.1rem;color:var(--ink);}
+  .section-title:first-child{margin-top:0;}
+  .two-col{display:grid;grid-template-columns:1.1fr 0.9fr;gap:1.1rem;}
+  @media(max-width:960px){.two-col{grid-template-columns:1fr;}}
+  .flag{display:flex;gap:0.4rem;align-items:center;font-size:0.78rem;color:var(--ink-soft);margin-top:0.6rem;}
+  .flag .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="side-mark">TR</div>
+    <nav class="side-nav" id="roleTabs"></nav>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div>
+            <h1>Ruta Control</h1>
+            <span>Transportes Rápido — gestión de flota</span>
+          </div>
+        </div>
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Buscar viaje, patente o cliente..." disabled>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-avatar">TR</div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap" id="app"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const SERVICE_TYPES = [
+  {codigo:'TR001', nombre:'Carga completa', descripcion:'Servicio dedicado para un solo cliente.', base:150000, km:2500},
+  {codigo:'TR002', nombre:'Transporte compartido', descripcion:'Varias cargas de diferentes clientes.', base:80000, km:1500},
+  {codigo:'TR003', nombre:'Urgente', descripcion:'Servicio prioritario con entrega en 24 horas.', base:250000, km:3500},
+  {codigo:'TR004', nombre:'Carga especial', descripcion:'Productos que requieren condiciones especiales (temperatura, fragilidad).', base:200000, km:3000},
+];
+
+const KM_DESDE_SANTIAGO = {
+  'santiago':0,'providencia':5,'las condes':12,'vitacura':14,'lo barnechea':20,'nunoa':6,
+  'la reina':10,'macul':8,'penalolen':14,'la florida':15,'puente alto':22,'san bernardo':20,
+  'maipu':16,'pudahuel':18,'cerrillos':12,'estacion central':6,'quinta normal':5,
+  'independencia':4,'recoleta':4,'conchali':7,'huechuraba':10,'renca':8,'quilicura':15,
+  'lo prado':8,'pedro aguirre cerda':9,'san miguel':7,'san joaquin':7,'la cisterna':11,
+  'el bosque':14,'la granja':11,'san ramon':10,'lo espejo':11,'cerro navia':10,
+  'colina':35,'lampa':28,'til til':60,'melipilla':65,'talagante':42,'penaflor':38,
+  'buin':42,'paine':52,'san jose de maipo':55,'pirque':30,'curacavi':55,'maria pinto':70,
+  'el monte':45,'isla de maipo':50,'padre hurtado':32,'calera de tango':30,
+  'valparaiso':115,'vina del mar':122,'quilpue':105,'villa alemana':100,'san antonio':110,
+  'los andes':80,'san felipe':90,'quillota':130,'la ligua':165,'la calera':125,
+  'limache':110,'olmue':115,'casablanca':90,'quintero':140,'concon':125,
+  'rancagua':88,'san fernando':140,'santa cruz':180,'pichilemu':200,'rengo':105,
+  'machali':95,'graneros':75,'chimbarongo':155,'san vicente':115,'coltauco':110,
+  'talca':260,'curico':200,'linares':300,'cauquenes':350,'constitucion':300,
+  'parral':330,'san javier':275,'molina':230,'san clemente':270,'curepto':290,
+  'chillan':400,'san carlos':380,'bulnes':415,'quirihue':440,'coihueco':410,
+  'concepcion':520,'talcahuano':530,'los angeles':500,'coronel':535,'chiguayante':525,
+  'tome':545,'lota':545,'hualpen':528,'los alamos':560,'santa juana':540,'penco':524,
+  'temuco':675,'villarrica':750,'pucon':780,'angol':605,'victoria':630,
+  'padre las casas':678,'nueva imperial':700,'lautaro':650,'curacautin':700,
+  'valdivia':840,'la union':890,'panguipulli':810,'rio bueno':870,'paillaco':860,
+  'puerto montt':1020,'osorno':920,'puerto varas':1010,'castro':1180,'ancud':1100,
+  'frutillar':1000,'quellon':1230,'chonchi':1200,'calbuco':1040,'los muermos':960,
+  'coyhaique':1650,'puerto aysen':1680,'chile chico':1900,'cochrane':1900,
+  'punta arenas':3080,'puerto natales':3000,'porvenir':3150,
+  'la serena':470,'coquimbo':480,'ovalle':400,'illapel':280,'vicuna':500,
+  'los vilos':230,'combarbala':350,'salamanca':300,'andacollo':500,
+  'copiapo':800,'vallenar':660,'chanaral':950,'caldera':840,'diego de almagro':900,
+  'antofagasta':1370,'calama':1500,'tocopilla':1450,'mejillones':1400,
+  'san pedro de atacama':1560,'maria elena':1420,
+  'iquique':1850,'pozo almonte':1900,'alto hospicio':1855,'pica':1930,
+  'arica':2050,'putre':2100,
+};
+const CIUDADES_ORDENADAS = Object.keys(KM_DESDE_SANTIAGO).sort((a,b)=>b.length-a.length);
+function normalizarCiudad(txt){
+  return (txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim();
+}
+function estimarKm(origenTxt, destinoTxt){
+  const o = normalizarCiudad(origenTxt), d = normalizarCiudad(destinoTxt);
+  const buscar = txt => CIUDADES_ORDENADAS.find(city => txt.includes(city));
+  const co = buscar(o), cd = buscar(d);
+  if(co && cd){
+    if(co===cd) return 15; 
+    return Math.abs(KM_DESDE_SANTIAGO[co]-KM_DESDE_SANTIAGO[cd]) || Math.max(KM_DESDE_SANTIAGO[co],KM_DESDE_SANTIAGO[cd]) || 15;
+  }
+  if(co && !cd) return KM_DESDE_SANTIAGO[co] || 300;
+  if(cd && !co) return KM_DESDE_SANTIAGO[cd] || 300;
+  return 300; 
+}
+
+const ESTADO_INFO = {
+  'Solicitado': {cliente:'Hemos recibido tu solicitud de viaje y estamos asignando recursos.', clase:'b-solicitado'},
+  'Asignado':   {cliente:'Se ha asignado un vehículo y conductor para tu viaje.', clase:'b-asignado'},
+  'En tránsito':{cliente:'El vehículo se encuentra en camino a tu destino.', clase:'b-transito'},
+  'Entregado':  {cliente:'El viaje ha sido completado exitosamente.', clase:'b-entregado'},
+  'Cancelado':  {cliente:'El viaje fue cancelado.', clase:'b-cancelado'},
+};
+const ESTADO_ORDEN = ['Solicitado','Asignado','En tránsito','Entregado'];
+
+let vehiculos = [
+  {patente:'AB1234', marca:'Volvo', modelo:'FH 500', anio:2020, tipo:'Tracto', capacidad:30000, km:145000, kmUltMant:130000, estado:'Disponible'},
+  {patente:'CD5678', marca:'Scania', modelo:'R 450', anio:2019, tipo:'Tracto', capacidad:28000, km:180000, kmUltMant:160000, estado:'En mantenimiento'},
+  {patente:'EF9012', marca:'Mercedes', modelo:'Actros 2545', anio:2021, tipo:'Tracto', capacidad:32000, km:95000, kmUltMant:90000, estado:'Disponible'},
+  {patente:'GH3456', marca:'MAN', modelo:'TGS 480', anio:2018, tipo:'Tracto', capacidad:26000, km:210000, kmUltMant:185000, estado:'Disponible'},
+  {patente:'IJ7890', marca:'Ford', modelo:'Cargo 816', anio:2020, tipo:'Camion', capacidad:8000, km:65000, kmUltMant:60000, estado:'En taller'},
+];
+const KM_INTERVALO_MANTENCION = 20000;
+
+let conductores = [
+  {id:1, nombre:'Héctor Rojas', estado:'Disponible', viajesCompletados:14, licencia:'A5'},
+  {id:2, nombre:'Marcela Toro', estado:'Disponible', viajesCompletados:9, licencia:'A5'},
+  {id:3, nombre:'Iván Peña', estado:'En viaje', viajesCompletados:21, licencia:'A4'},
+  {id:4, nombre:'Soledad Vera', estado:'Descanso', viajesCompletados:6, licencia:'A5'},
+];
+
+let clientes = [
+  {id:1, nombre:'Comercial Andes SpA'},
+  {id:2, nombre:'Distribuidora Sur Ltda.'},
+  {id:3, nombre:'Constructora Los Robles'},
+];
+
+let tripSeq = 1;
+let trips = [];
+let maintenance = [];
+let maintSeq = 1;
+let fuelLogs = []; 
+let fuelSeq = 1;
+
+function seedTrips(){
+  trips.push(mkTrip({clienteId:1, origen:'Santiago', destino:'Concepción', servicio:'TR001', carga:'Repuestos industriales', kmEstimado:520, estado:'Entregado', vehiculo:'EF9012', conductorId:3}));
+  trips.push(mkTrip({clienteId:2, origen:'Santiago', destino:'Rancagua', servicio:'TR002', carga:'Abarrotes retail', kmEstimado:88, estado:'En tránsito', vehiculo:'GH3456', conductorId:3}));
+  trips.push(mkTrip({clienteId:3, origen:'Santiago', destino:'Talca', servicio:'TR004', carga:'Materiales de construcción refrigerados', kmEstimado:260, estado:'Asignado', vehiculo:'AB1234', conductorId:1}));
+  trips.push(mkTrip({clienteId:1, origen:'Santiago', destino:'La Serena', servicio:'TR003', carga:'Piezas urgentes de línea productiva', kmEstimado:470, estado:'Solicitado'}));
+  trips.push(mkTrip({clienteId:2, origen:'Santiago', destino:'Valparaíso', servicio:'TR002', carga:'Mercadería mixta', kmEstimado:115, estado:'Cancelado'}));
+}
+function mkTrip(o){
+  const s = SERVICE_TYPES.find(s=>s.codigo===o.servicio);
+  const costo = s.base + s.km*o.kmEstimado;
+  return {
+    id:'V-'+String(tripSeq++).padStart(4,'0'),
+    clienteId:o.clienteId, origen:o.origen, destino:o.destino, servicio:o.servicio,
+    carga:o.carga, kmEstimado:o.kmEstimado, costo, estado:o.estado||'Solicitado',
+    vehiculo:o.vehiculo||null, conductorId:o.conductorId||null, novedades:[],
+    fecha: new Date().toISOString().slice(0,10),
+    ubicacion:null, ubicacionFecha:null,
+    retrasado:false 
+  };
+}
+function seedMaintenance(){
+  maintenance.push({id:'M-'+String(maintSeq++).padStart(3,'0'), vehiculo:'CD5678', tipo:'Correctivo', detalle:'Falla en sistema de frenos', fecha:'2026-09-05', estado:'En curso'});
+  maintenance.push({id:'M-'+String(maintSeq++).padStart(3,'0'), vehiculo:'IJ7890', tipo:'Correctivo', detalle:'Revisión de motor', fecha:'2026-09-02', estado:'En curso'});
+  maintenance.push({id:'M-'+String(maintSeq++).padStart(3,'0'), vehiculo:'GH3456', tipo:'Preventivo', detalle:'Cambio de aceite y filtros (210.000 km)', fecha:'2026-09-12', estado:'Programado'});
+}
+seedTrips();
+seedMaintenance();
+
+const ROLES = [
+  {id:'cliente', label:'Cliente', icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path><line x1="12" y1="13" x2="12" y2="21"></line>'},
+  {id:'conductor', label:'Conductor', icon:'<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.4"></circle><line x1="12" y1="3" x2="12" y2="9.4"></line><line x1="5.5" y1="16" x2="10" y2="13.5"></line><line x1="18.5" y1="16" x2="14" y2="13.5"></line>'},
+  {id:'supervisor', label:'Supervisor de ruta', icon:'<path d="M9 20l-5-2V6l5 2 6-2 5 2v12l-5-2-6 2z"></path><line x1="9" y1="8" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="16"></line>'},
+  {id:'jefe', label:'Jefe de flota', icon:'<rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4h6v2H9z"></path><polyline points="8.5 13 11 15.5 15.5 10.5"></polyline>'},
+  {id:'mantenimiento', label:'Mantenimiento', icon:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2 2.5-2.5z"></path>'},
+  {id:'admin', label:'Administrador', icon:'<line x1="5" y1="20" x2="5" y2="12"></line><line x1="12" y1="20" x2="12" y2="6"></line><line x1="19" y1="20" x2="19" y2="15"></line>'},
+];
+let currentRole = 'cliente';
+let currentClienteId = 1;
+let currentConductorId = 1;
+
+function fmtCLP(n){ return '$'+Math.round(n).toLocaleString('es-CL'); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function validarCampos(form, campos, contenedorId){
+  const faltantes = [];
+  campos.forEach(c=>{
+    const el = form.elements[c.name];
+    if(!el) return;
+    el.classList.remove('input-error');
+    const valor = (el.value||'').trim();
+    if(!valor){ faltantes.push(c.label); el.classList.add('input-error'); }
+  });
+  const caja = document.getElementById(contenedorId);
+  if(faltantes.length){
+    caja.innerHTML = `<div class="form-error-box">Faltan datos obligatorios por completar: <b>${faltantes.join(', ')}</b>.</div>`;
+    return false;
+  }
+  caja.innerHTML = '';
+  return true;
+}
+
+function renderTabs(){
+  const wrap = document.getElementById('roleTabs');
+  wrap.innerHTML = ROLES.map(r=>`<button data-role="${r.id}" class="${r.id===currentRole?'active':''}" title="${r.label}"><svg viewBox="0 0 24 24">${r.icon}</svg></button>`).join('');
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{ currentRole=b.dataset.role; renderAll(); });
+  });
+}
+
+function renderAll(){
+  renderTabs();
+  const app = document.getElementById('app');
+  app.innerHTML = {
+    cliente: viewCliente,
+    conductor: viewConductor,
+    supervisor: viewSupervisor,
+    jefe: viewJefe,
+    mantenimiento: viewMantenimiento,
+    admin: viewAdmin,
+  }[currentRole]();
+  bindEvents();
+}
+
+function viewCliente(){
+  const misViajes = trips.filter(t=>t.clienteId===currentClienteId).sort((a,b)=> b.id.localeCompare(a.id));
+  return `
+  <div class="role-head">
+    <div>
+      <h2>Portal del cliente</h2>
+      <p>Solicita un viaje y sigue el estado de tu carga. Solo ves la información de tus propios viajes.</p>
+    </div>
+    <div class="as-select">
+      Viendo como
+      <select id="selCliente">
+        ${clientes.map(c=>`<option value="${c.id}" ${c.id===currentClienteId?'selected':''}>${c.nombre}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Solicitar viaje</h3>
+      <form id="formSolicitud" novalidate>
+        <label>Origen <span class="req">*</span></label>
+        <input name="origen" placeholder="Ej: Santiago" required>
+        <label>Destino <span class="req">*</span></label>
+        <input name="destino" placeholder="Ej: Puerto Montt" required>
+        <label>Tipo de servicio <span class="req">*</span></label>
+        <select name="servicio" required>
+          ${SERVICE_TYPES.map(s=>`<option value="${s.codigo}">${s.nombre} — ${fmtCLP(s.base)} base + ${fmtCLP(s.km)}/km</option>`).join('')}
+        </select>
+        <label>Descripción de la carga <span class="req">*</span></label>
+        <textarea name="carga" placeholder="Ej: 12 pallets de abarrotes, sin refrigeración" required></textarea>
+        <label>Distancia estimada (km) <span class="req">*</span></label>
+        <input name="km" type="number" min="1" required readonly class="input-readonly" placeholder="Se calcula al ingresar origen y destino">
+        <p class="small muted" style="margin-top:0.3rem;">Se calcula automáticamente a partir de la comuna/ciudad de origen y destino que escribas. No es editable.</p>
+        <label> timado</label>
+        <div class="costo-estimado" id="costoEstimadoBox">$0</div>
+        <p class="small muted" style="margin-top:0.3rem;">Tarifa base del servicio elegido más el valor por km, multiplicado por la distancia estimada.</p>
+        <p class="small muted" style="margin-top:0.5rem;"><span class="req">*</span> Todos los campos son obligatorios para solicitar el viaje.</p>
+        <div id="erroresSolicitud"></div>
+        <div style="margin-top:1rem;">
+          <button class="btn big" type="submit">Solicitar viaje</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Costo estimado del servicio</h3>
+      <p class="muted small">El costo se calcula como tarifa base más un valor por kilómetro, según el tipo de servicio elegido.</p>
+      <table>
+        <thead><tr><th>Servicio</th><th>Base</th><th>Por km</th></tr></thead>
+        <tbody>
+          ${SERVICE_TYPES.map(s=>`<tr><td>${s.nombre}</td><td>${fmtCLP(s.base)}</td><td>${fmtCLP(s.km)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3 class="section-title">Mis viajes</h3>
+  ${misViajes.length===0 ? `<div class="empty">Aún no tienes viajes solicitados.</div>` :
+    misViajes.map(t=>tripCardCliente(t)).join('')}
+  `;
+}
+
+function tripCardCliente(t){
+  const info = ESTADO_INFO[t.estado];
+  const idxActual = ESTADO_ORDEN.indexOf(t.estado);
+  const cond = conductores.find(c=>c.id===t.conductorId);
+  return `
+  <div class="card" style="margin-bottom:0.8rem;">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+      <div>
+        <h4>${t.id} · ${t.origen} → ${t.destino}</h4>
+        <p class="small muted" style="margin:0;">${t.carga} · ${fmtCLP(t.costo)} · ${t.kmEstimado} km</p>
+      </div>
+      <span class="badge ${info.clase}">${t.estado}</span>
+    </div>
+    <p class="small" style="margin-top:0.5rem;">${info.cliente}</p>
+    ${t.estado!=='Cancelado' ? `
+    <div class="timeline">
+      ${ESTADO_ORDEN.map((e,i)=>`
+        <div class="tl-step ${i<idxActual?'done':''} ${i===idxActual?'current':''}">
+          <div class="tl-dot"></div>
+          <div class="tl-label">${e}</div>
+        </div>`).join('')}
+    </div>` : ''}
+    ${t.vehiculo ? `<p class="small muted">Vehículo asignado: ${t.vehiculo} ${cond?'· Conductor: '+cond.nombre:''}</p>` : ''}
+    ${t.estado==='En tránsito' ? (t.ubicacion
+      ? `<p class="small" style="color:var(--blue);">📍 Última ubicación: <strong>${t.ubicacion}</strong> <span class="muted">(actualizado ${t.ubicacionFecha})</span></p>`
+      : `<p class="small muted">📍 Aún sin reporte de ubicación del conductor.</p>`) : ''}
+    ${t.novedades.length ? `<p class="small" style="color:var(--warn);">Última novedad: ${t.novedades[t.novedades.length-1]}</p>` : ''}
+    ${t.retrasado ? `<p class="small" style="color:var(--danger);">⚠ Este viaje se entregó con retraso respecto a lo estimado.</p>` : ''}
+    ${t.estado==='Entregado' ? `<div class="flag"><span class="dot"></span>Puedes calificar este servicio.</div>` : ''}
+  </div>`;
+}
+
+function viewConductor(){
+  const misViajes = trips.filter(t=>t.conductorId===currentConductorId && (t.estado==='Asignado'||t.estado==='En tránsito'));
+  const historial = trips.filter(t=>t.conductorId===currentConductorId && (t.estado==='Entregado'||t.estado==='Cancelado')).slice(-5).reverse();
+  const misCargasCombustible = fuelLogs.filter(f=>f.conductorId===currentConductorId).slice(-5).reverse();
+  return `
+  <div class="role-head">
+    <div>
+      <h2>App del conductor</h2>
+      <p>Pantalla pensada para uso en el teléfono, con botones grandes e instrucciones claras.</p>
+    </div>
+    <div class="as-select">
+      Viendo como
+      <select id="selConductor">
+        ${conductores.map(c=>`<option value="${c.id}" ${c.id===currentConductorId?'selected':''}>${c.nombre}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+
+  <h3 class="section-title">Viajes asignados</h3>
+  ${misViajes.length===0 ? `<div class="empty">No tienes viajes asignados en este momento.</div>` :
+    misViajes.map(t=>driverTile(t)).join('')}
+
+  <h3 class="section-title">Historial reciente</h3>
+  ${historial.length===0 ? `<div class="empty">Sin viajes completados aún.</div>` : `
+  <table>
+    <thead><tr><th>Viaje</th><th>Ruta</th><th>Estado</th></tr></thead>
+    <tbody>
+    ${historial.map(t=>`<tr><td>${t.id}</td><td>${t.origen} → ${t.destino}</td><td><span class="badge ${ESTADO_INFO[t.estado].clase}">${t.estado}</span></td></tr>`).join('')}
+    </tbody>
+  </table>`}
+
+  <h3 class="section-title">Combustible cargado por mí</h3>
+  ${misCargasCombustible.length===0 ? `<div class="empty">Aún no registras cargas de combustible.</div>` : `
+  <table>
+    <thead><tr><th>Vehículo</th><th>Litros</th><th>Costo</th><th>Fecha</th></tr></thead>
+    <tbody>
+    ${misCargasCombustible.map(f=>`<tr><td>${f.patente}</td><td>${f.litros} L</td><td>${fmtCLP(f.costo)}</td><td>${f.fecha}</td></tr>`).join('')}
+    </tbody>
+  </table>`}
+  `;
+}
+
+function driverTile(t){
+  const cliente = clientes.find(c=>c.id===t.clienteId);
+  const nextAction = t.estado==='Asignado'
+    ? {label:'Iniciar viaje (marcar en tránsito)', to:'En tránsito'}
+    : {label:'Marcar como entregado', to:'Entregado'};
+  return `
+  <div class="driver-card" style="margin-bottom:1rem;">
+    <span class="badge ${ESTADO_INFO[t.estado].clase}" style="background:rgba(255,255,255,0.14);color:#fff;">${t.estado}</span>
+    <div class="tt-route">${t.origen} → ${t.destino}</div>
+    <div class="tt-meta">${t.id} · ${cliente?cliente.nombre:''} · Vehículo ${t.vehiculo} · ${t.kmEstimado} km</div>
+    <div class="tt-meta">Carga: ${t.carga}</div>
+    ${t.estado==='En tránsito' ? `<div class="tt-meta" style="margin-top:0.4rem;">📍 ${t.ubicacion ? `Ubicación reportada: <strong>${t.ubicacion}</strong> (${t.ubicacionFecha})` : 'Sin ubicación reportada aún'}</div>` : ''}
+    <button class="btn big" data-action="avanzar" data-id="${t.id}" data-to="${nextAction.to}">${nextAction.label}</button>
+    ${t.estado==='En tránsito' ? `<button class="btn secondary big" style="margin-top:0.5rem;" data-action="ubicacion" data-id="${t.id}">Actualizar mi ubicación</button>` : ''}
+    <button class="btn ghost big" style="margin-top:0.5rem;background:transparent;border-color:#3A424A;color:#fff;" data-action="novedad" data-id="${t.id}">Reportar novedad</button>
+    <button class="btn ghost big" style="margin-top:0.5rem;background:transparent;border-color:#3A424A;color:#fff;" data-action="combustible" data-id="${t.id}">Registrar carga de combustible</button>
+  </div>`;
+}
+
+function viewSupervisor(){
+  const columnas = ['Solicitado','Asignado','En tránsito','Entregado','Cancelado'];
+  return `
+  <div class="role-head">
+    <div>
+      <h2>Tablero de despacho</h2>
+      <p>Asigna vehículos y conductores disponibles a las solicitudes pendientes y sigue cada viaje hasta su entrega.</p>
+    </div>
+  </div>
+
+  <div class="board">
+    ${columnas.map(col=>{
+      const items = trips.filter(t=>t.estado===col);
+      return `
+      <div class="board-col">
+        <div class="board-col-head">${col} <span class="count">${items.length}</span></div>
+        <div class="board-body">
+          ${items.length===0 ? `<p class="small muted" style="padding:0.3rem;">Sin viajes.</p>` :
+            items.map(t=>boardTile(t,col)).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <h3 class="section-title">Disponibilidad de vehículos</h3>
+  <table>
+    <thead><tr><th>Patente</th><th>Marca / modelo</th><th>Tipo</th><th>Capacidad</th><th>Kilometraje</th><th>Estado</th></tr></thead>
+    <tbody>
+      ${vehiculos.map(v=>`<tr>
+        <td>${v.patente}</td><td>${v.marca} ${v.modelo}</td><td>${v.tipo}</td>
+        <td>${v.capacidad.toLocaleString('es-CL')} kg</td><td>${v.km.toLocaleString('es-CL')} km</td>
+        <td><span class="badge ${estadoVehiculoClase(v.estado)}">${v.estado}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+
+  <h3 class="section-title">Disponibilidad de conductores</h3>
+  <table>
+    <thead><tr><th>Conductor</th><th>Licencia</th><th>Viajes completados</th><th>Estado</th></tr></thead>
+    <tbody>
+      ${conductores.map(c=>`<tr>
+        <td>${c.nombre}</td><td>${c.licencia}</td><td>${c.viajesCompletados}</td>
+        <td><span class="badge ${estadoConductorClase(c.estado)}">${c.estado}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  `;
+}
+
+function estadoVehiculoClase(e){
+  return {'Disponible':'b-disponible','En mantenimiento':'b-mantenimiento','En taller':'b-taller','En viaje':'b-viaje'}[e] || 'b-descanso';
+}
+function estadoConductorClase(e){
+  return {'Disponible':'b-disponible','En viaje':'b-viaje','Descanso':'b-descanso'}[e] || 'b-descanso';
+}
+
+function boardTile(t,col){
+  const cliente = clientes.find(c=>c.id===t.clienteId);
+  let actions = '';
+  if(col==='Solicitado'){
+    const vehiculosLibres = vehiculos.filter(v=>v.estado==='Disponible');
+    const conductoresLibres = conductores.filter(c=>c.estado==='Disponible');
+    if(vehiculosLibres.length && conductoresLibres.length){
+      actions = `
+        <select data-vehiculo-for="${t.id}" style="margin-top:0.4rem;padding:0.25rem;font-size:0.75rem;">
+          ${vehiculosLibres.map(v=>`<option value="${v.patente}">${v.patente} (${v.marca})</option>`).join('')}
+        </select>
+        <select data-conductor-for="${t.id}" style="margin-top:0.3rem;padding:0.25rem;font-size:0.75rem;">
+          ${conductoresLibres.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('')}
+        </select>
+        <div class="tt-actions">
+          <button data-action="asignar" data-id="${t.id}">Asignar</button>
+          <button data-action="cancelar" data-id="${t.id}">Cancelar</button>
+        </div>`;
+    } else {
+      actions = `<p class="small" style="color:var(--danger);margin-top:0.4rem;">Sin recursos libres ahora mismo.</p>
+        <div class="tt-actions"><button data-action="cancelar" data-id="${t.id}">Cancelar</button></div>`;
+    }
+  } else if(col==='Asignado' || col==='En tránsito'){
+    actions = `<div class="tt-actions"><button data-action="ver-novedades" data-id="${t.id}">Ver novedades (${t.novedades.length})</button></div>`;
+  }
+  return `
+  <div class="trip-tile">
+    <div class="tt-id">${t.id}</div>
+    <div>${t.origen} → ${t.destino}</div>
+    <div class="muted">${cliente?cliente.nombre:''} · ${t.kmEstimado} km</div>
+    ${t.vehiculo ? `<div class="muted">Vehículo ${t.vehiculo}${t.conductorId?' · '+conductores.find(c=>c.id===t.conductorId).nombre:''}</div>`:''}
+    ${actions}
+  </div>`;
+}
+
+function viewJefe(){
+  const totalVeh = vehiculos.length;
+  const enViaje = trips.filter(t=>t.estado==='En tránsito').length;
+  const utilizacion = Math.round((enViaje / totalVeh) * 100);
+  const disponibles = vehiculos.filter(v=>v.estado==='Disponible').length;
+  const enMant = vehiculos.filter(v=>v.estado!=='Disponible').length;
+  const activos = trips.filter(t=>t.estado!=='Cancelado');
+  const entregados = trips.filter(t=>t.estado==='Entregado');
+  const retrasados = entregados.filter(t=>t.retrasado).length;
+  const pctRetraso = entregados.length ? Math.round((retrasados/entregados.length)*100) : 0;
+  const maxViajes = Math.max(...conductores.map(c=>c.viajesCompletados),1);
+
+  return `
+  <div class="role-head">
+    <div>
+      <h2>Panorama de flota</h2>
+      <p>Disponibilidad, utilización y rendimiento de vehículos y conductores en un solo lugar.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:1.2rem;">
+    <div class="card kpi up"><div class="num">${disponibles}/${totalVeh}</div><div class="lbl">Vehículos disponibles ahora</div></div>
+    <div class="card kpi"><div class="num">${enMant}</div><div class="lbl">En mantenimiento o taller</div></div>
+    <div class="card kpi ${pctRetraso>15?'down':''}"><div class="num">${pctRetraso}%</div><div class="lbl">Viajes entregados con retraso (${retrasados}/${entregados.length})</div></div>
+    <div class="card kpi down"><div class="num">${maintenance.filter(m=>m.tipo==='Correctivo'&&m.estado==='En curso').length}</div><div class="lbl">Fallas correctivas en curso</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Utilización de la flota</h3>
+      <div class="donut" style="--pct:${utilizacion}"><div class="donut-inner"><div class="num">${utilizacion}%</div><div class="lbl">en tránsito ahora</div></div></div>
+      <p class="small muted" style="text-align:center;margin-top:0.7rem;">Vehículos en ruta sobre el total de la flota. La meta del proyecto es superar el 70% histórico con asignación optimizada.</p>
+    </div>
+    <div class="card">
+      <h3>Rendimiento por conductor</h3>
+      <div class="bars">
+        ${conductores.map(c=>`
+        <div class="bar-row">
+          <span>${c.nombre.split(' ')[0]}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${(c.viajesCompletados/maxViajes*100).toFixed(0)}%"></div></div>
+          <span>${c.viajesCompletados}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">Estado de la flota</h3>
+  <table>
+    <thead><tr><th>Patente</th><th>Marca / modelo</th><th>Kilometraje</th><th>Próxima mantención</th><th>Estado</th></tr></thead>
+    <tbody>
+      ${vehiculos.map(v=>`<tr>
+        <td>${v.patente}</td><td>${v.marca} ${v.modelo}</td><td>${v.km.toLocaleString('es-CL')} km</td>
+        <td>${(v.kmUltMant+KM_INTERVALO_MANTENCION).toLocaleString('es-CL')} km</td>
+        <td><span class="badge ${estadoVehiculoClase(v.estado)}">${v.estado}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  `;
+}
+
+function viewMantenimiento(){
+  const alertas = vehiculos.filter(v=> (v.km - v.kmUltMant) >= KM_INTERVALO_MANTENCION);
+  return `
+  <div class="role-head">
+    <div>
+      <h2>Mantenimiento de flota</h2>
+      <p>Programa revisiones, registra intervenciones y recibe alertas automáticas por kilometraje, sincronizadas con la disponibilidad de la flota.</p>
+    </div>
+  </div>
+
+  <h3 class="section-title">Alertas automáticas</h3>
+  ${alertas.length===0 ? `<div class="empty">No hay vehículos que superen el intervalo de mantención preventiva (${KM_INTERVALO_MANTENCION.toLocaleString('es-CL')} km).</div>` :
+    alertas.map(v=>`<div class="alert"><b>${v.patente}</b> — acumula ${(v.km - v.kmUltMant).toLocaleString('es-CL')} km desde su última mantención. Se recomienda programar revisión preventiva.</div>`).join('')}
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Registrar mantención</h3>
+      <form id="formMantencion" novalidate>
+        <label>Vehículo <span class="req">*</span></label>
+        <select name="vehiculo" required>
+          ${vehiculos.map(v=>`<option value="${v.patente}">${v.patente} — ${v.marca} ${v.modelo}</option>`).join('')}
+        </select>
+        <label>Tipo <span class="req">*</span></label>
+        <select name="tipo" required>
+          <option>Preventivo</option>
+          <option>Correctivo</option>
+        </select>
+        <label>Detalle <span class="req">*</span></label>
+        <input name="detalle" placeholder="Ej: Cambio de neumáticos" required>
+        <label>Fecha programada <span class="req">*</span></label>
+        <input name="fecha" type="date" required>
+        <p class="small muted" style="margin-top:0.5rem;"><span class="req">*</span> Todos los campos son obligatorios para registrar la mantención.</p>
+        <div id="erroresMantencion"></div>
+        <div style="margin-top:1rem;">
+          <button class="btn big" type="submit">Guardar y actualizar disponibilidad</button>
+        </div>
+      </form>
+      <p class="small muted" style="margin-top:0.6rem;">Al registrar una mantención, el vehículo pasa automáticamente a estado "En mantenimiento" y deja de estar disponible para el supervisor de ruta.</p>
+    </div>
+
+    <div class="card">
+      <h3>Historial de mantenciones</h3>
+      <table>
+        <thead><tr><th>Vehículo</th><th>Tipo</th><th>Detalle</th><th>Fecha</th><th>Estado</th></tr></thead>
+        <tbody>
+        ${maintenance.slice().reverse().map(m=>`<tr>
+          <td>${m.vehiculo}</td><td>${m.tipo}</td><td>${m.detalle}</td><td>${m.fecha}</td>
+          <td>
+            ${m.estado==='En curso' ? `<button class="btn ghost" data-action="cerrar-mant" data-id="${m.id}" style="padding:0.3rem 0.6rem;font-size:0.75rem;">Marcar terminada</button>` :
+              `<span class="badge ${m.estado==='Terminada'?'b-disponible':'b-mantenimiento'}">${m.estado}</span>`}
+          </td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  `;
+}
+
+function viewAdmin(){
+  const activos = trips.filter(t=>t.estado!=='Cancelado');
+  const costoTotal = activos.reduce((s,t)=>s+t.costo,0);
+  const kmTotal = activos.reduce((s,t)=>s+t.kmEstimado,0);
+  const consumoLitrosEstimado = Math.round(kmTotal / 3.2); 
+  const litrosReales = fuelLogs.reduce((s,f)=>s+f.litros,0);
+  const costoCombustibleReal = fuelLogs.reduce((s,f)=>s+f.costo,0);
+  const porServicio = SERVICE_TYPES.map(s=>({
+    ...s, cantidad: trips.filter(t=>t.servicio===s.codigo && t.estado!=='Cancelado').length
+  }));
+  const maxServ = Math.max(...porServicio.map(s=>s.cantidad),1);
+  const porConductor = conductores.slice().sort((a,b)=>b.viajesCompletados-a.viajesCompletados);
+  const maxCond = Math.max(...porConductor.map(c=>c.viajesCompletados),1);
+
+  return `
+  <div class="role-head">
+    <div>
+      <h2>Reportes de gestión</h2>
+      <p>Utilización de flota, costos operativos, consumo de combustible y productividad de conductores, generados automáticamente.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3" style="margin-bottom:1.2rem;">
+    <div class="card kpi"><div class="num">${fmtCLP(costoTotal)}</div><div class="lbl">Costo operativo acumulado (viajes activos)</div></div>
+    <div class="card kpi"><div class="num">${kmTotal.toLocaleString('es-CL')} km</div><div class="lbl">Kilómetros recorridos (viajes activos)</div></div>
+    <div class="card kpi"><div class="num">${litrosReales.toLocaleString('es-CL')} L</div><div class="lbl">Combustible real registrado por conductores</div></div>
+  </div>
+  <div class="card small muted" style="margin-bottom:1.2rem;">
+    Estimado por rendimiento (3,2 km/l): <strong>${consumoLitrosEstimado.toLocaleString('es-CL')} L</strong> ·
+    Costo real de combustible registrado: <strong>${fmtCLP(costoCombustibleReal)}</strong>
+    ${litrosReales>0 ? `· Diferencia vs. estimado: <strong>${(litrosReales-consumoLitrosEstimado).toLocaleString('es-CL')} L</strong>` : ' · aún no hay cargas registradas por conductores.'}
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Viajes por tipo de servicio</h3>
+      <div class="bars">
+        ${porServicio.map(s=>`
+        <div class="bar-row">
+          <span>${s.nombre}</span>
+          <div class="bar-track"><div class="bar-fill accent" style="width:${(s.cantidad/maxServ*100).toFixed(0)}%"></div></div>
+          <span>${s.cantidad}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Productividad de conductores</h3>
+      <div class="bars">
+        ${porConductor.map(c=>`
+        <div class="bar-row">
+          <span>${c.nombre.split(' ')[0]}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${(c.viajesCompletados/maxCond*100).toFixed(0)}%"></div></div>
+          <span>${c.viajesCompletados}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">Detalle de viajes</h3>
+  <table>
+    <thead><tr><th>Viaje</th><th>Cliente</th><th>Ruta</th><th>Servicio</th><th>Costo</th><th>Estado</th></tr></thead>
+    <tbody>
+      ${trips.slice().reverse().map(t=>{
+        const cli = clientes.find(c=>c.id===t.clienteId);
+        const serv = SERVICE_TYPES.find(s=>s.codigo===t.servicio);
+        return `<tr>
+          <td>${t.id}</td><td>${cli?cli.nombre:''}</td><td>${t.origen} → ${t.destino}</td>
+          <td>${serv.nombre}</td><td>${fmtCLP(t.costo)}</td>
+          <td><span class="badge ${ESTADO_INFO[t.estado].clase}">${t.estado}</span></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
+
+  <h3 class="section-title">Detalle de cargas de combustible</h3>
+  ${fuelLogs.length===0 ? `<div class="empty">Aún no hay cargas de combustible registradas por conductores.</div>` : `
+  <table>
+    <thead><tr><th>Registro</th><th>Vehículo</th><th>Conductor</th><th>Litros</th><th>Costo</th><th>Fecha</th></tr></thead>
+    <tbody>
+      ${fuelLogs.slice().reverse().map(f=>{
+        const cond = conductores.find(c=>c.id===f.conductorId);
+        return `<tr><td>${f.id}</td><td>${f.patente}</td><td>${cond?cond.nombre:''}</td><td>${f.litros} L</td><td>${fmtCLP(f.costo)}</td><td>${f.fecha}</td></tr>`;
+      }).join('')}
+    </tbody>
+  </table>`}
+  `;
+}
+
+function bindEvents(){
+  const selCliente = document.getElementById('selCliente');
+  if(selCliente) selCliente.addEventListener('change', e=>{ currentClienteId = Number(e.target.value); renderAll(); });
+
+  const selConductor = document.getElementById('selConductor');
+  if(selConductor) selConductor.addEventListener('change', e=>{ currentConductorId = Number(e.target.value); renderAll(); });
+
+  const formSolicitud = document.getElementById('formSolicitud');
+  if(formSolicitud){
+    const inOrigen = formSolicitud.querySelector('[name="origen"]');
+    const inDestino = formSolicitud.querySelector('[name="destino"]');
+    const inKm = formSolicitud.querySelector('[name="km"]');
+    const selServicio = formSolicitud.querySelector('[name="servicio"]');
+    const costoBox = document.getElementById('costoEstimadoBox');
+    const actualizarCostoEstimado = ()=>{
+      const s = SERVICE_TYPES.find(s=>s.codigo===selServicio.value);
+      const km = Number(inKm.value) || 0;
+      costoBox.textContent = s ? fmtCLP(s.base + s.km*km) : '$0';
+    };
+    const actualizarKmAuto = ()=>{ inKm.value = estimarKm(inOrigen.value, inDestino.value); actualizarCostoEstimado(); };
+    inOrigen.addEventListener('input', actualizarKmAuto);
+    inDestino.addEventListener('input', actualizarKmAuto);
+    selServicio.addEventListener('change', actualizarCostoEstimado);
+    actualizarCostoEstimado();
+
+    formSolicitud.addEventListener('submit', e=>{
+      e.preventDefault();
+      const ok = validarCampos(formSolicitud, [
+        {name:'origen', label:'Origen'},
+        {name:'destino', label:'Destino'},
+        {name:'servicio', label:'Tipo de servicio'},
+        {name:'carga', label:'Descripción de la carga'},
+        {name:'km', label:'Distancia estimada (revisa que origen y destino estén reconocidos)'},
+      ], 'erroresSolicitud');
+      if(!ok) return;
+      const f = new FormData(formSolicitud);
+      trips.push(mkTrip({
+        clienteId: currentClienteId,
+        origen: f.get('origen'), destino: f.get('destino'),
+        servicio: f.get('servicio'), carga: f.get('carga'),
+        kmEstimado: Number(f.get('km')), estado:'Solicitado'
+      }));
+      showToast('Solicitud de viaje enviada.');
+      renderAll();
+    });
+  }
+
+  const formMantencion = document.getElementById('formMantencion');
+  if(formMantencion) formMantencion.addEventListener('submit', e=>{
+    e.preventDefault();
+    const ok = validarCampos(formMantencion, [
+      {name:'vehiculo', label:'Vehículo'},
+      {name:'tipo', label:'Tipo'},
+      {name:'detalle', label:'Detalle'},
+      {name:'fecha', label:'Fecha programada'},
+    ], 'erroresMantencion');
+    if(!ok) return;
+    const f = new FormData(formMantencion);
+    const patente = f.get('vehiculo');
+    maintenance.push({id:'M-'+String(maintSeq++).padStart(3,'0'), vehiculo:patente, tipo:f.get('tipo'), detalle:f.get('detalle'), fecha:f.get('fecha'), estado:'En curso'});
+    const v = vehiculos.find(v=>v.patente===patente);
+    if(v){ v.estado = 'En mantenimiento'; }
+    showToast('Mantención registrada. El vehículo quedó no disponible.');
+    renderAll();
+  });
+
+  document.querySelectorAll('[data-action="cerrar-mant"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const m = maintenance.find(m=>m.id===b.dataset.id);
+      m.estado = 'Terminada';
+      const v = vehiculos.find(v=>v.patente===m.vehiculo);
+      if(v){ v.estado='Disponible'; v.kmUltMant = v.km; }
+      showToast('Mantención cerrada. Vehículo disponible nuevamente.');
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll('[data-action="avanzar"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = trips.find(t=>t.id===b.dataset.id);
+      t.estado = b.dataset.to;
+      const v = vehiculos.find(v=>v.patente===t.vehiculo);
+      const c = conductores.find(c=>c.id===t.conductorId);
+      if(t.estado==='En tránsito'){ if(v) v.estado='En viaje'; if(c) c.estado='En viaje'; }
+      if(t.estado==='Entregado'){
+        if(v){ v.estado='Disponible'; v.km += t.kmEstimado; }
+        if(c){ c.estado='Disponible'; c.viajesCompletados += 1; }
+        if(t.novedades.length > 0){ t.retrasado = true; }
+      }
+      showToast('Estado del viaje actualizado.');
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll('[data-action="novedad"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const texto = prompt('Describe la novedad del viaje (ej: tráfico, desperfecto menor):');
+      if(texto){
+        const t = trips.find(t=>t.id===b.dataset.id);
+        t.novedades.push(texto);
+        showToast('Novedad reportada al supervisor.');
+        renderAll();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-action="asignar"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.id;
+      const selV = document.querySelector(`[data-vehiculo-for="${id}"]`);
+      const selC = document.querySelector(`[data-conductor-for="${id}"]`);
+      const t = trips.find(t=>t.id===id);
+      t.vehiculo = selV.value;
+      t.conductorId = Number(selC.value);
+      t.estado = 'Asignado';
+      const v = vehiculos.find(v=>v.patente===t.vehiculo);
+      const c = conductores.find(c=>c.id===t.conductorId);
+      if(v) v.estado='En viaje';
+      if(c) c.estado='En viaje';
+      showToast(`Viaje ${id} asignado a ${v.patente} / ${c.nombre}.`);
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll('[data-action="cancelar"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = trips.find(t=>t.id===b.dataset.id);
+      t.estado = 'Cancelado';
+      showToast(`Viaje ${t.id} cancelado.`);
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll('[data-action="ubicacion"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const lugar = prompt('¿En qué ciudad, comuna o tramo de ruta te encuentras ahora?');
+      if(lugar){
+        const t = trips.find(t=>t.id===b.dataset.id);
+        t.ubicacion = lugar;
+        t.ubicacionFecha = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+        showToast('Ubicación actualizada. El cliente ya puede verla.');
+        renderAll();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-action="combustible"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = trips.find(t=>t.id===b.dataset.id);
+      const litros = Number(prompt('¿Cuántos litros de combustible cargaste?', '80'));
+      if(!litros) return;
+      const costo = Number(prompt('¿Cuál fue el costo total de la carga (CLP)?', String(litros*1200)));
+      if(!costo) return;
+      fuelLogs.push({
+        id:'F-'+String(fuelSeq++).padStart(4,'0'),
+        patente:t.vehiculo, conductorId:t.conductorId, litros, costo,
+        fecha:new Date().toISOString().slice(0,10)
+      });
+      showToast('Carga de combustible registrada.');
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll('[data-action="ver-novedades"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = trips.find(t=>t.id===b.dataset.id);
+      alert(t.novedades.length ? t.novedades.map((n,i)=>`${i+1}. ${n}`).join('\n') : 'Sin novedades reportadas para este viaje.');
+    });
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>
